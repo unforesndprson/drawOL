@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<!-- 1.0.2 -->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" /> -->
+    <title></title>
+    <style>
+    html,body{
+      -webkit-user-select:none; user-select: none;
+    }
+      *{
+        padding:0;
+        margin:0;
+
+      }
+      header{
+        height:10vh;
+        text-align: center;
+        line-height: 10vh;
+        color:#393939;
+      }
+      canvas{
+
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        -webkit-user-modify:read-write-plaintext-only;
+        -webkit-touch-callout: none ;
+        /*position:absolute;*/
+        margin:0 auto;
+      }
+    </style>
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="http://apps.bdimg.com/libs/zepto/1.1.4/zepto.min.js"></script>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+  </head>
+  <body style="background:deepskyblue">
+<!-- <article style="min-height:200px;width:400px;background:deepskyblue">welcome...</article>
+
+<input type="text" >
+<button>send</button> -->
+<header>
+  <h1>你画我猜</h1>
+</header>
+
+<canvas width="" height="500px"  style="display:block;background:#fff;cursor:pointer">
+  您的浏览器无法支持canvas
+</canvas>
+  </body>
+  <script type="text/javascript">
+window.onload=function(){
+var socket = io.connect('http://192.168.10.146:9527');
+
+// 添加一个连接监听器
+socket.on('connect',function() {
+console.log('Client has connected to the server!');
+// sendMessageToServer(new Date().getTime());
+socket.emit('clinet-server',new Date().getTime())
+});
+
+// 获取canvas
+var cvs=document.querySelector('canvas');
+var ctx=cvs.getContext('2d');
+$('canvas').attr('width',window.innerWidth);
+// $('canvas').attr('height',window.innerHeight);
+ cvs.addEventListener('touchstart',beginDraw_mob, false);
+ cvs.addEventListener('touchmove',Drawing_mob,false);
+ cvs.addEventListener('mousedown',beginDraw, false);
+
+cvs.onmouseout=function(){
+  cvs.onmousemove=null;
+}
+cvs.onmouseup=function(){
+  cvs.onmousemove=null;
+}
+// 开始画画函数
+function beginDraw(ev){
+
+  var ev=ev||event;
+  ctx.beginPath();
+  var x=ev.pageX-cvs.offsetLeft;
+  var y=ev.pageY-cvs.offsetTop;
+  console.log(x,y)
+  ctx.moveTo(x,y);
+  cvs.onmousemove=Drawing;
+
+}
+// 画画过程函数
+function Drawing(ev2){
+  ev2.preventDefault();
+  var ev2=ev2||event;
+  var x=ev2.pageX-cvs.offsetLeft;
+  var y=ev2.pageY-cvs.offsetTop;
+
+  ctx.lineTo(x,y);
+  ctx.strokeStyle="deepskyblue";
+
+  ctx.stroke();
+  socket.emit('client-server-cvsimg',cvs.toDataURL());
+}
+
+// 开始画画函数 mob
+function beginDraw_mob(ev){
+
+  ev.preventDefault();
+  var touch = ev.Touches[0];
+  ctx.beginPath();
+  var x=touch.pageX-cvs.offsetLeft;
+  var y=touch.pageY-cvs.offsetTop;
+
+  ctx.moveTo(x,y);
+  cvs.onmousemove=Drawing;
+
+}
+// 画画过程函数  mob
+function Drawing_mob(ev2){
+
+  ev2.preventDefault();
+
+
+      var touch = ev2.targetTouches[0];
+      var x=touch.pageX-cvs.offsetLeft;
+      var y=touch.pageY-cvs.offsetTop;
+
+
+      ctx.lineTo(x,y);
+      ctx.strokeStyle="deepskyblue";
+
+      ctx.stroke();
+      socket.emit('client-server-cvsimg',cvs.toDataURL());
+
+}
+// 添加一个连接监听器
+socket.on('server-client',function(data) {
+
+$('article').html(data.join('<br/>'))
+});
+
+// 添加一个连接监听器 cvsimg
+socket.on('server-client-cvsimg',function(data) {
+  var cvsimg=new Image();
+  cvsimg.src=data;
+  cvsimg.onload=function(){
+    ctx.drawImage(cvsimg,0,0);
+  }
+
+
+})
+// 添加一个关闭连接的监听器
+socket.on('disconnect',function() {
+console.log('The client has disconnected!');
+});
+
+// 通过Socket发送一条消息到服务器
+function sendMessageToServer(message) {
+socket.send(message);
+}
+
+$('button').on('click',function(){
+  var news=$('input').val();
+  // sendMessageToServer(news);
+  socket.emit('clinet-server',news);
+})
+
+
+}//window.onload end
+  </script>
+</html>
