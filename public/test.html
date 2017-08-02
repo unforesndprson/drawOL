@@ -3,8 +3,48 @@
   <head>
     <meta charset="utf-8">
     <title></title>
+    <style>
+    ul>li{
+      width:100px;
+      height:100px;
+    }
+    /*ul>li:nth-child(1){
+      background: red;;
+    }*/
+    ul>li:nth-child(2){
+      background: blue;;
+    }
+    ul>li:nth-child(3){
+      background: red;;
+    }
+    ul>li:nth-child(4){
+      background: red;;
+    }
+    ul>li:nth-child(5){
+      background: red;;
+    }
+    </style>
+    <script type="text/javascript" src="js/jquery.min.js">
+
+    </script>
   </head>
   <body>
-
+<ul>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+</ul>
   </body>
+  <script type="text/javascript">
+
+    $('ul>li').click(function(){
+      console.log(1);
+      $('ul>li').eq(0).css('background','black');
+      $(this).prop('background','black');
+    })
+
+
+  </script>
 </html>
