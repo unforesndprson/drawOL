@@ -17,6 +17,9 @@
       ul,li{
         list-style: none;
       }
+      input{
+        outline: none;
+      }
       header{
         height:10vh;
         text-align: center;
@@ -36,6 +39,7 @@
         margin: 0 auto;
         overflow: auto;
         position: relative;
+        padding:10px 0;
       }
       .strokeColors{
         float: left;
@@ -64,15 +68,24 @@
       .strokeColors>li:nth-child(5){
         background: teal;
       }
+      .moreColors{
+        float: left;
+        height:50px;
+        width:50px;
+        margin-right:20px;
+      }
       .strokeWidth{
-
-        outline: none;
         position: absolute;
         top:50%;
         transform: translateY(-50%);
 
       }
+      .inp_talk{
 
+      }
+      .btn_talk{
+
+      }
     </style>
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <script type="text/javascript" src="http://apps.bdimg.com/libs/zepto/1.1.4/zepto.min.js"></script>
@@ -86,11 +99,11 @@
 <input type="text" >
 <button>send</button> -->
 <header>
-  <h1>你画我猜</h1>
+  <h1>DrawOL</h1>
 
 </header>
 
-<canvas width="" height="500px"  style="display:block;background:#fff;cursor:pointer">
+<canvas width="" height="400px"  style="display:block;background:#fff;cursor:pointer">
   您的浏览器无法支持canvas
 </canvas>
 <div class="container">
@@ -102,8 +115,14 @@
     <li></li>
     <li></li>
   </ul>
+  <input class="moreColors" type="color">
   <span style="line-height:50px;font-size:20px;color:#fff;float:left;">画笔宽度：</span>
   <input class="strokeWidth" type="range" step="1" min="1" max="20" value="5">
+
+</div>
+<div class="container" >
+  <input class="inp_talk" type="text" >
+  <button class="btn_talk">发言</button>
 </div>
 
   </body>
@@ -117,7 +136,11 @@ console.log('Client has connected to the server!');
 // sendMessageToServer(new Date().getTime());
 socket.emit('clinet-server',new Date().getTime())
 });
-
+// 获取canvas
+var cvs=document.querySelector('canvas');
+var ctx=cvs.getContext('2d');
+$('canvas').attr('width',window.innerWidth*0.6);
+// $('canvas').attr('height',window.innerHeight);
 // 开启画板
 DrawFun();
 //画板函数
@@ -134,25 +157,32 @@ function DrawFun(){
     pan.color=$(this).css('backgroundColor');
     // console.log(typeof $(this).css('backgroundColor'));
   })
+  // 更多颜色选择
+  $('.moreColors').on('change',function(){
+    pan.color=$(this).val();
+  })
   //点击改变画笔粗细
 $('.strokeWidth').on('input',function (){
   pan.width=$(this).val();
 });
-  // 获取canvas
-  var cvs=document.querySelector('canvas');
-  var ctx=cvs.getContext('2d');
-  $('canvas').attr('width',window.innerWidth*0.6);
-  // $('canvas').attr('height',window.innerHeight);
-   cvs.addEventListener('touchstart',beginDraw_mob, false);
-   cvs.addEventListener('touchmove',Drawing_mob,false);
-   cvs.addEventListener('mousedown',beginDraw, false);
 
+
+   cvs.addEventListener('touchstart',beginDraw_mob, false);
+  //  cvs.addEventListener('touchmove',Drawing_mob,false);
+   cvs.addEventListener('mousedown',beginDraw, false);
+  // pc端停止绘画
   cvs.onmouseout=function(){
     cvs.onmousemove=null;
   }
   cvs.onmouseup=function(){
     cvs.onmousemove=null;
   }
+  // 添加事件：mob端停止绘画
+  cvs.addEventListener('touchend',function(){
+    cvs.removeEventListener('touchmove','Drawing_mob');
+  })
+
+
   // 开始画画函数
   function beginDraw(ev){
 
@@ -160,7 +190,7 @@ $('.strokeWidth').on('input',function (){
     ctx.beginPath();
     var x=ev.pageX-cvs.offsetLeft;
     var y=ev.pageY-cvs.offsetTop;
-    console.log(x,y)
+
     ctx.moveTo(x,y);
     cvs.onmousemove=Drawing;
 
@@ -181,15 +211,15 @@ $('.strokeWidth').on('input',function (){
 
   // 开始画画函数 mob
   function beginDraw_mob(ev){
-
+    var ev=ev||event;
     ev.preventDefault();
-    var touch = ev.Touches[0];
+    var touch = ev.touches[0];
     ctx.beginPath();
     var x=touch.pageX-cvs.offsetLeft;
     var y=touch.pageY-cvs.offsetTop;
 
     ctx.moveTo(x,y);
-    cvs.onmousemove=Drawing;
+    cvs.addEventListener('touchmove',Drawing_mob)
 
   }
   // 画画过程函数  mob
